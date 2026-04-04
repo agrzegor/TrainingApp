@@ -2,10 +2,10 @@ package pl.coderslab.trainingapp.controller;
 
 
 import org.springframework.web.bind.annotation.*;
+import pl.coderslab.trainingapp.dto.CustomerDto;
+import pl.coderslab.trainingapp.dto.TrainerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
-import pl.coderslab.trainingapp.entity.Customer;
 import pl.coderslab.trainingapp.entity.Session;
-import pl.coderslab.trainingapp.entity.Trainer;
 import pl.coderslab.trainingapp.service.TrainerService;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class TrainerController {
     }
 
     @GetMapping("/trainers")
-    public List<Trainer> getAll() {
+    public List<TrainerDto> getAll() {
         return trainerService.readAllTrainers();
     }
 
@@ -30,14 +30,14 @@ public class TrainerController {
      *
      * @TODO
      */
-    @GetMapping("/trainers/{me}")
-    public Trainer getLoggedProfile() {
+    @GetMapping("/trainers/me")
+    public TrainerDto getLoggedProfile() {
         return null;
     }
 
 
     @PutMapping("/trainers/{id}")
-    public Trainer updateTrainer(@PathVariable("id") Long id,
+    public TrainerDto updateTrainer(@PathVariable("id") Long id,
                                            @RequestBody UserDto userDto) {
         return trainerService.updateTrainerDetails(userDto, id);
     }
@@ -52,7 +52,7 @@ public class TrainerController {
      * @TODO
      */
     @GetMapping("/trainers/me/customers")
-    public List<Customer> getCustomersByTrainer(){
+    public List<CustomerDto> getCustomersByTrainer(){
         return null;
     }
 

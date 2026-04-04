@@ -17,16 +17,24 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello";
-    }
 
 
     @PostMapping("/create")
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUserDto(@RequestBody UserDto userDto) {
       return  userService.createUser(userDto);
+
+    }
+
+    /**
+     *
+     * @TODO
+     */
+
+    @GetMapping("/login")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void loginUser(@RequestBody UserDto userDto) {
+
 
     }
 

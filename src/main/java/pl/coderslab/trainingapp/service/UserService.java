@@ -2,6 +2,9 @@ package pl.coderslab.trainingapp.service;
 
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.UserDto;
 import pl.coderslab.trainingapp.entity.User;
@@ -25,4 +28,10 @@ public class UserService {
 
        return mapper.toDto(createdUser);
     }
+
+//    public UserDto loginUser(final  UserDto userDto){
+//
+//
+//    }
+
 }
