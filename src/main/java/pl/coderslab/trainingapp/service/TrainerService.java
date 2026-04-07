@@ -61,4 +61,5 @@ public class TrainerService {
     public void deleteTrainerAccount(Long id){
         trainerRepository.deleteById(id);
     }
+
 }

@@ -1,6 +1,7 @@
 package pl.coderslab.trainingapp.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.CustomerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
@@ -22,6 +23,7 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final TrainerRepository trainerRepository;
     private Mapper mapper;
+    private PasswordEncoder passwordEncoder;
 
     public Customer createCustomer(UserDto userDto) {
 
@@ -31,15 +33,16 @@ public class CustomerService {
         customer.setEmail(userDto.email());
         customer.setPhone(userDto.phone());
         customer.setUserType(userDto.userType());
+        customer.setPassword(passwordEncoder.encode(userDto.password()));
 
         return (customerRepository.save(customer));
 
     }
 
-    public void addCustomerToTrainer(Long customerId, String trainerIdentifier) {
+    public void addCustomerToTrainer(String email, String trainerIdentifier) {
         Trainer trainer1 = trainerRepository.findByIdentifier(trainerIdentifier)
                 .orElseThrow(() -> new NoSuchElementException("Trainer with provided identifier do not exists."));
-        Customer customer = customerRepository.getCustomerById(customerId);
+        Customer customer = customerRepository.getCustomersByEmail(email);
         customer.setTrainer(trainer1);
         customerRepository.save(customer);
     }
@@ -50,8 +53,8 @@ public class CustomerService {
 
     }
 
-    public List<CustomerDto> getAllCustomersByTrainer (Long id){
-        List<Customer> customerList =  customerRepository.findAllByTrainer_Id(id);
+    public List<CustomerDto> getAllCustomersByTrainer (String email){
+        List<Customer> customerList =  customerRepository.findAllByTrainer_Email(email);
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         for (Customer customer : customerList) {

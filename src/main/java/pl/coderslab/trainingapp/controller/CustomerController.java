@@ -1,11 +1,10 @@
 package pl.coderslab.trainingapp.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.CustomerDto;
-import pl.coderslab.trainingapp.dto.TrainerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
-import pl.coderslab.trainingapp.entity.Customer;
-import pl.coderslab.trainingapp.entity.Session;
+import pl.coderslab.trainingapp.entity.TrainingSession;
 import pl.coderslab.trainingapp.service.CustomerService;
 
 import java.util.List;
@@ -20,11 +19,19 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-
-    @PostMapping("/customers/{customerId}/{trainerIdentifier}")
-    public void addCustomerToTrainer(@PathVariable("customerId") Long customerId,
+    /**
+     *
+     * @param email
+    *
+     * Spring:
+     * Pobiera Authentication z SecurityContextHolder
+     * Wyciąga z niego .getPrincipal()
+     * Wstrzykuje to jako parametr metody
+     */
+    @PostMapping("/customers/{trainerIdentifier}")
+    public void addCustomerToTrainer(@AuthenticationPrincipal String email,
                                      @PathVariable("trainerIdentifier") String trainerIdentifier) {
-        customerService.addCustomerToTrainer(customerId, trainerIdentifier);
+        customerService.addCustomerToTrainer(email, trainerIdentifier);
     }
 
     @GetMapping("/customers/{id}")
@@ -44,16 +51,16 @@ public class CustomerController {
         customerService.deleteCustomer(id);
     }
 
-    @GetMapping("/customers/trainerid={trainerId}")
-    public List<CustomerDto> getAllCustomersByTrainer(@PathVariable("trainerId") Long trainerId){
-        return  customerService.getAllCustomersByTrainer(trainerId);
-    }
+//    @GetMapping("/customers/trainerid={trainerId}")
+//    public List<CustomerDto> getAllCustomersByTrainer(@PathVariable("trainerId") Long trainerId){
+//        return  customerService.getAllCustomersByTrainer(trainerId);
+//    }
     /**
      *
      * @TODO
      */
     @GetMapping("/customers/{id}/session")
-    public List<Session> getAllCustomerSession(@PathVariable("id") Long id) {
+    public List<TrainingSession> getAllCustomerSession(@PathVariable("id") Long id) {
 
         return null;
     }

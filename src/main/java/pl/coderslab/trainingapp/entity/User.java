@@ -1,7 +1,6 @@
 package pl.coderslab.trainingapp.entity;
 
 import jakarta.persistence.*;
-import jdk.jfr.Timespan;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.Nullable;
