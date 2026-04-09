@@ -2,21 +2,15 @@ package pl.coderslab.trainingapp.mappers;
 
 
 import org.springframework.stereotype.Component;
-import pl.coderslab.trainingapp.dto.CustomerDto;
-import pl.coderslab.trainingapp.dto.TrainerDto;
-import pl.coderslab.trainingapp.dto.UserDto;
-import pl.coderslab.trainingapp.entity.Customer;
-import pl.coderslab.trainingapp.entity.Trainer;
-import pl.coderslab.trainingapp.entity.User;
-
-import java.util.List;
+import pl.coderslab.trainingapp.dto.*;
+import pl.coderslab.trainingapp.entity.*;
 
 @Component
 public class Mapper {
 
 
-    public UserDto toDto(User user){
-       return UserDto.builder()
+    public UserDto toDto(User user) {
+        return UserDto.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
@@ -25,18 +19,42 @@ public class Mapper {
 
     }
 
-    public CustomerDto toDto(Customer customer){
+    public CustomerDto toDto(Customer customer) {
         return new CustomerDto(
+                customer.getId(),
                 customer.getFirstName(),
-                customer.getLastName()
+                customer.getLastName(),
+                customer.getPhone()
         );
     }
 
-    public TrainerDto toDto(Trainer trainer){
+    public TrainerDto toDto(Trainer trainer) {
         return new TrainerDto(
                 trainer.getId(),
                 trainer.getFirstName(),
-                trainer.getLastName()
+                trainer.getLastName(),
+                trainer.getPhone()
         );
+    }
+
+    public TrainingSessionDto toDto(TrainingSession trainingSession) {
+        return TrainingSessionDto.builder()
+                .trainerId(trainingSession.getTrainer().getId())
+                .customerId(trainingSession.getCustomer().getId())
+                .createdAt(trainingSession.getCreatedAt())
+                .startDate(trainingSession.getStartDate())
+                .duration(trainingSession.getDuration())
+                .build();
+
+    }
+
+    public SessionExerciseDto toDto(SessionExercise  sessionExercise){
+        return SessionExerciseDto.builder()
+//                .trainingSessionId(sessionExercise.getTrainingSession().getId())
+//                .exerciseId(sessionExercise.getTrainingSession().getId())
+//                .reps(sessionExercise.getReps())
+//                .sets(sessionExercise.getSets())
+//                .weight(sessionExercise.getWeight())
+                .build();
     }
 }

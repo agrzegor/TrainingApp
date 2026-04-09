@@ -19,48 +19,30 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    /**
-     *
-     * @param email
-    *
-     * Spring:
-     * Pobiera Authentication z SecurityContextHolder
-     * Wyciąga z niego .getPrincipal()
-     * Wstrzykuje to jako parametr metody
-     */
+
     @PostMapping("/customers/{trainerIdentifier}")
     public void addCustomerToTrainer(@AuthenticationPrincipal String email,
                                      @PathVariable("trainerIdentifier") String trainerIdentifier) {
         customerService.addCustomerToTrainer(email, trainerIdentifier);
     }
 
-    @GetMapping("/customers/{id}")
-    public CustomerDto getCustomerById(@PathVariable("id") Long id) {
-        return customerService.getCustomerById(id);
-
+    @GetMapping("/customers/me")
+    public CustomerDto getCurrentCustomer(@AuthenticationPrincipal String email) {
+        return customerService.getCustomerDtoByEmail(email);
     }
 
-    @PutMapping("/customers/{id}")
-    public CustomerDto updateCustomerById(@PathVariable("id") Long id,
-                                       UserDto userDto) {
-        return customerService.updateCustomerById(id, userDto);
+    @PutMapping("/customers")
+    public CustomerDto updateCustomerById(@AuthenticationPrincipal String email,
+                                      @RequestBody UserDto userDto) {
+        return customerService.updateCustomer(email, userDto);
     }
 
-    @DeleteMapping("/customers/{id}")
-    public void deleteCustomerById(@PathVariable("id") Long id) {
-        customerService.deleteCustomer(id);
-    }
 
-//    @GetMapping("/customers/trainerid={trainerId}")
-//    public List<CustomerDto> getAllCustomersByTrainer(@PathVariable("trainerId") Long trainerId){
-//        return  customerService.getAllCustomersByTrainer(trainerId);
-//    }
-    /**
-     *
+    /*
      * @TODO
      */
-    @GetMapping("/customers/{id}/session")
-    public List<TrainingSession> getAllCustomerSession(@PathVariable("id") Long id) {
+    @GetMapping("/customers/session")
+    public List<TrainingSession> getAllCustomerSession(@AuthenticationPrincipal String email) {
 
         return null;
     }

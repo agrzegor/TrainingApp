@@ -4,9 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-@Entity (name = "session")
+@Entity (name = "training_session")
 @Setter
 @Getter
 public class TrainingSession {
@@ -15,7 +15,19 @@ public class TrainingSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany
-    private List<SessionExercise> sessionExercise;
+    @ManyToOne
+    @JoinColumn(name = "trainer_id")
+    private Trainer trainer;
+
+    @ManyToOne
+    @JoinColumn (name = "customer_id")
+    private Customer customer;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime startDate;
+
+    private int duration;
+
 
 }

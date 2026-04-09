@@ -3,7 +3,9 @@ package pl.coderslab.trainingapp.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +44,7 @@ public class UserService {
         );
 
         return userRepository.findByEmail(userDto.email())
-                .orElseThrow();
+                .orElseThrow( () -> new BadCredentialsException("Authentication failed"));
     }
 
 }

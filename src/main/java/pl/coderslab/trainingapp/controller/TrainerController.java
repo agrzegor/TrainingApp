@@ -25,27 +25,29 @@ public class TrainerController {
         this.customerService = customerService;
     }
 
-    @GetMapping("/trainers")
-    public List<TrainerDto> getAll() {
-        return trainerService.readAllTrainers();
-    }
 
-
-    @PutMapping("/trainers/{id}")
-    public TrainerDto updateTrainer(@PathVariable("id") Long id,
+    @PutMapping("/trainers")
+    public TrainerDto updateTrainer(@AuthenticationPrincipal String email,
                                     @RequestBody UserDto userDto) {
-        return trainerService.updateTrainerDetails(userDto, id);
-    }
-
-    @DeleteMapping("/trainers/{id}")
-    public void deleteTreiner(@PathVariable("id") Long id) {
-        trainerService.deleteTrainerAccount(id);
+        return trainerService.updateTrainerDetails(email,userDto);
     }
 
     @GetMapping("/trainers/me/customers")
     public List<CustomerDto> getCustomersByTrainer(@AuthenticationPrincipal String email) {
         return customerService.getAllCustomersByTrainer(email);
     }
+
+    @GetMapping("/trainers/customers/{id}")
+    public CustomerDto getCustomerById(@AuthenticationPrincipal String trainerEmail,
+                                       @PathVariable Long id) {
+        return trainerService.getCustomerById(trainerEmail,id);
+    }
+    @DeleteMapping("/trainers/customers/{customerId}")
+    public void unlinkCustomerFromTrainer (@AuthenticationPrincipal String trainerEmail,
+                                           @PathVariable("customerId") Long customerId){
+        trainerService.unlinkCustomerFromTrainer(trainerEmail,customerId);
+    }
+
 
     /**
      *

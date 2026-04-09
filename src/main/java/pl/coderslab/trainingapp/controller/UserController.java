@@ -23,14 +23,6 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
-
-//    @PostMapping("/create")
-//    @ResponseStatus(HttpStatus.CREATED)
-//    public UserDto createUserDto(@RequestBody UserDto userDto) {
-//        return userService.createUser(userDto);
-//
-//    }
-
     @PostMapping("/signup")
     public ResponseEntity<UserDto> register(@RequestBody UserDto registerUserDto) {
         UserDto registeredUser = userService.createUser(registerUserDto);
@@ -44,4 +36,5 @@ public class UserController {
         LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
+
 }

@@ -15,6 +15,7 @@ import pl.coderslab.trainingapp.repository.TrainerRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -47,14 +48,16 @@ public class CustomerService {
         customerRepository.save(customer);
     }
 
-    public CustomerDto getCustomerById(Long id) {
-        return mapper.toDto(customerRepository.findById(id)
-                .orElseThrow(()-> new NoSuchElementException("Customer with provided ID do not exists.")));
+
+    public CustomerDto getCustomerDtoByEmail(String customerEmail) {
+        return mapper.toDto(customerRepository.findCustomerByEmail(customerEmail)
+                .orElseThrow(() -> new NoSuchElementException("Customer with provided ID do not exists.")));
 
     }
 
-    public List<CustomerDto> getAllCustomersByTrainer (String email){
-        List<Customer> customerList =  customerRepository.findAllByTrainer_Email(email);
+
+    public List<CustomerDto> getAllCustomersByTrainer(String email) {
+        List<Customer> customerList = customerRepository.findAllByTrainer_Email(email);
         List<CustomerDto> customerDtoList = new ArrayList<>();
 
         for (Customer customer : customerList) {
@@ -65,19 +68,27 @@ public class CustomerService {
 
     }
 
-    public CustomerDto updateCustomerById(Long id, UserDto userDto) {
-        Customer customer = customerRepository.findById(id)
+    public CustomerDto updateCustomer(String customerEmail, UserDto userDto) {
+        Customer customer = customerRepository.findCustomerByEmail(customerEmail)
                 .map(customerUpd -> {
-                    customerUpd.setFirstName(userDto.firstName());
-                    customerUpd.setLastName(userDto.lastName());
-                    customerUpd.setPhone(userDto.phone());
-                    customerUpd.setEmail(userDto.email());
+                    customerUpd.setFirstName(Optional.ofNullable(userDto.firstName())
+                            .orElse(customerUpd.getFirstName()));
+                    customerUpd.setLastName(Optional.ofNullable(userDto.lastName())
+                            .orElse(customerUpd.getLastName()));
+                    customerUpd.setPhone(Optional.ofNullable(userDto.phone())
+                            .orElse(customerUpd.getPhone()));
                     return customerUpd;
                 }).orElseThrow(() -> new NoSuchElementException("No customer with provided id"));
         return mapper.toDto(customerRepository.save(customer));
     }
 
-    public void deleteCustomer(Long id) {
-        customerRepository.deleteById(id);
+    private Customer getCustomerByEmail(String customerEmail) {
+        return customerRepository.findCustomerByEmail(customerEmail)
+                .orElseThrow(() -> new NoSuchElementException("User with provided ID not exist."));
+    }
+
+    Customer getCustomerById(Long customerId) {
+        return customerRepository.findCustomerById(customerId)
+                .orElseThrow(() -> new NoSuchElementException("User with provided ID not exist."));
     }
 }
