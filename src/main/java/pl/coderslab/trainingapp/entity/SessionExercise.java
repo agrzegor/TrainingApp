@@ -18,11 +18,11 @@ public class SessionExercise {
     @JoinColumn(name = "training_session_id")
     private TrainingSession trainingSession;
 
-        private Long reps;
+        private Integer reps;
 
-        private Long series;
+        private Integer series;
 
-        private Long weight;
+        private Integer weight;
 
         @ManyToOne
         @JoinColumn(name ="exercise_id")

@@ -49,13 +49,4 @@ public class TrainerController {
     }
 
 
-    /**
-     *
-     * @TODO
-     */
-    @GetMapping("/trainers/me/session")
-    public List<TrainingSession> getSessionsByTrainer(@AuthenticationPrincipal String email) {
-
-        return List.of();
-    }
 }

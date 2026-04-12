@@ -1,4 +1,4 @@
-package pl.coderslab.trainingapp.dto;
+package pl.coderslab.trainingapp.dto.api;
 
 import java.time.LocalDateTime;
 

@@ -15,6 +15,8 @@ import pl.coderslab.trainingapp.entity.User;
 import pl.coderslab.trainingapp.mappers.Mapper;
 import pl.coderslab.trainingapp.repository.UserRepository;
 
+import java.util.NoSuchElementException;
+
 @Service
 @AllArgsConstructor
 public class UserService {
@@ -44,7 +46,11 @@ public class UserService {
         );
 
         return userRepository.findByEmail(userDto.email())
-                .orElseThrow( () -> new BadCredentialsException("Authentication failed"));
+                .orElseThrow(() -> new BadCredentialsException("Authentication failed"));
+    }
+
+    public User getUser(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new NoSuchElementException("User not found"));
     }
 
 }

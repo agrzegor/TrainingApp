@@ -4,10 +4,12 @@ import lombok.Builder;
 
 @Builder
 public record SessionExerciseDto(
+        Long id,
         Long trainingSessionId,
+        String exerciseName,
         Long exerciseId,
         Integer reps,
-        Integer sets,
+        Integer series,
         Integer weight
 
 ) {

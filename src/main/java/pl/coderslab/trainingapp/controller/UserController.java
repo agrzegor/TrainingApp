@@ -1,13 +1,12 @@
 package pl.coderslab.trainingapp.controller;
 
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.UserDto;
 import pl.coderslab.trainingapp.security.JwtService;
-import pl.coderslab.trainingapp.security.LoginResponse;
+import pl.coderslab.trainingapp.dto.api.LoginResponse;
 import pl.coderslab.trainingapp.service.UserService;
 
 @RestController
