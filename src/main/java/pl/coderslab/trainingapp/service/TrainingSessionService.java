@@ -62,6 +62,7 @@ public class TrainingSessionService {
 
     }
 
+
     public TrainingSession getTrainingSessionByIdAndEmail(String email, Long id) {
         return trainingSessionRepository.getTrainingSessionByIdAndTrainer_Email(id, email)
                 .orElseThrow(() -> new NoSuchElementException("Training session do not exists"));

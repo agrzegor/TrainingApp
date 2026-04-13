@@ -1,6 +1,7 @@
 package pl.coderslab.trainingapp.controller;
 
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class UserController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> register(@RequestBody UserDto registerUserDto) {
+    public ResponseEntity<UserDto> register(@RequestBody @Valid UserDto registerUserDto) {
         UserDto registeredUser = userService.createUser(registerUserDto);
         return ResponseEntity.ok(registeredUser);
     }

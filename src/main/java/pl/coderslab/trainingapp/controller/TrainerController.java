@@ -1,6 +1,7 @@
 package pl.coderslab.trainingapp.controller;
 
 
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.CustomerDto;
@@ -28,7 +29,7 @@ public class TrainerController {
 
     @PutMapping("/trainers")
     public TrainerDto updateTrainer(@AuthenticationPrincipal String email,
-                                    @RequestBody UserDto userDto) {
+                                    @RequestBody @Valid UserDto userDto) {
         return trainerService.updateTrainerDetails(email,userDto);
     }
 
@@ -47,6 +48,5 @@ public class TrainerController {
                                            @PathVariable("customerId") Long customerId){
         trainerService.unlinkCustomerFromTrainer(trainerEmail,customerId);
     }
-
 
 }
