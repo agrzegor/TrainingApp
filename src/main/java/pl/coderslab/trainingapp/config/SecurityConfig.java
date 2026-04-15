@@ -39,21 +39,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(10);
     }
 
-    /**
-     *
-     * @param httpSecurity
-     * @return Baza -> User -> SecurityUser (UserDetails) -> getAuthorities() -> Authentication -> handler
-     * <p>
-     * Spring Security wymaga tokenu CSRF przy wszystkich żądaniach typu POST/PUT/DELETE.
-     * Wyłączenie CSRF jest typowe dla REST API, bo nie używamy formularzy z tokenami.
-     * Bez tego, każde POST bez tokenu dawałoby 403 Forbidden.
-     * <p>
-     * .permitAll()) - kazdy moze wejsc na dany endopint, inne wymagaja autoryzacji
-     * <p>
-     * .build () Tworzy obiekt SecurityFilterChain, który Spring używa w filtrach HTTP, żeby sprawdzać autoryzację,
-     * uwierzytelnianie i inne reguły bezpieczeństwa.
-     * Bez tego chain nie istnieje i Spring nie wie, jak filtrować żądania.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
@@ -68,29 +53,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-    /**
-     * Tworzy bean, który Spring Security może użyć po udanym logowaniu.
-     * Interfejs AuthenticationSuccessHandler definiuje jedną metodę:
-     * Spring wywołuje tę metodę automatycznie, gdy logowanie się powiedzie.
-     * Authentication przechowuje dane zalogowanego użytkownika (UserDetails w Spring).
-     * getAuthorities() zwraca wszystkie role/uprawnienia użytkownika
-     */
-//    @Bean
-//    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-//        return (request, response, authentication) -> {
-//
-//            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-//            boolean isTrainer = authorities.stream()
-//                    .anyMatch(a -> Objects.equals(a.getAuthority(), "TRAINER"));
-//            if (isTrainer) {
-//                response.sendRedirect("/api/trainers/me");
-//            } else {
-//                response.sendRedirect("/api/customers/me");
-//            }
-//
-//        };
-//    }
 
 
     @Bean
@@ -108,16 +70,6 @@ public class SecurityConfig {
         return source;
     }
 
-    /**
-     *
-     * Tworzymy bean typu DaoAuthenticationProvider.
-     * Spring Security użyje go do obsługi logowania username/password.
-     * PasswordEncoder jest wstrzykiwany, żeby Spring mógł poprawnie sprawdzić hasło.
-     * userDetailsService to  serwis, który implementuje UserDetailsService.
-     * To on odpowiada za pobranie użytkownika z bazy i zwrócenie obiektu UserDetails.
-     * Dzięki temu Spring sprawdzi, czy podane przez użytkownika hasło pasuje do tego w bazie
-     *
-     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider(
             PasswordEncoder passwordEncoder) {

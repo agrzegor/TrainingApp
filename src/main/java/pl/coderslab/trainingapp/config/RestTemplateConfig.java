@@ -28,7 +28,6 @@ public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate() throws Exception {
-        // 1. Create a trust manager that does not validate certificate chains
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() { return null; }
@@ -37,17 +36,15 @@ public class RestTemplateConfig {
                 }
         };
 
-        // 2. Install the all-trusting trust manager
+
         SSLContext sc = SSLContext.getInstance("SSL");
         sc.init(null, trustAllCerts, new java.security.SecureRandom());
 
-        // 3. Create a request factory that overrides the connection setup
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory() {
             @Override
             protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException, IOException {
                 if (connection instanceof HttpsURLConnection) {
                     ((HttpsURLConnection) connection).setSSLSocketFactory(sc.getSocketFactory());
-                    // Skip hostname verification (e.g., if the cert name doesn't match the URL)
                     ((HttpsURLConnection) connection).setHostnameVerifier((hostname, session) -> true);
                 }
                 super.prepareConnection(connection, httpMethod);
