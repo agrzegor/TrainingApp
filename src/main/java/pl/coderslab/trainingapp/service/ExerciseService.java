@@ -1,11 +1,14 @@
 package pl.coderslab.trainingapp.service;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import pl.coderslab.trainingapp.config.RapidApi;
@@ -23,6 +26,8 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
+@Slf4j
 public class ExerciseService {
 
 
@@ -51,13 +56,11 @@ public class ExerciseService {
                     new ParameterizedTypeReference<GetExerciseDetailsResponse>() {
                     }
             ).getBody();
-
-
             return response;
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error");
+        } catch (RestClientException e) {
+            log.error("Failed to fetch exercise details for externalId={}", externalId, e);
+            throw new RuntimeException("Failed to fetch exercise details for id: " + externalId, e);
         }
 
     }
@@ -91,9 +94,9 @@ public class ExerciseService {
                     .toList();
 
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Error");
+        } catch (RestClientException e) {
+            log.error("Failed to search exercises for query='{}'", search, e);
+            throw new RuntimeException("Failed to search exercises", e);
         }
     }
 
@@ -110,6 +113,6 @@ public class ExerciseService {
 
     public Exercise getExerciseById(Long id) {
         return exerciseRepository.findExerciseById(id)
-                .orElseThrow(() -> new NoSuchElementException("Exercise do not exists"));
+                .orElseThrow(() -> new NoSuchElementException("Exercise does not exist."));
     }
 }

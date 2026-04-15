@@ -1,6 +1,7 @@
 package pl.coderslab.trainingapp.service;
 
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,16 +20,20 @@ import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class UserService {
 
     private final TrainerService trainerService;
     private final UserRepository userRepository;
     private final CustomerService customerService;
-    private Mapper mapper;
+    private final Mapper mapper;
     private final AuthenticationManager authenticationManager;
 
     public UserDto createUser(final UserDto userDto) {
 
+        if (userRepository.findByEmail(userDto.email()).isPresent()){
+            throw new IllegalArgumentException("Invalid email or password");
+        }
         User createdUser = switch (userDto.userType()) {
             case TRAINER -> trainerService.createTrainer(userDto);
             case CUSTOMER -> customerService.createCustomer(userDto);

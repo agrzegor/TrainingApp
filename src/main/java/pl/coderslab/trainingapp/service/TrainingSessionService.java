@@ -1,5 +1,6 @@
 package pl.coderslab.trainingapp.service;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.api.CreateTrainingSessionRequest;
@@ -12,35 +13,51 @@ import pl.coderslab.trainingapp.repository.TrainingSessionRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class TrainingSessionService {
 
     private final TrainingSessionRepository trainingSessionRepository;
-    private TrainerRepository trainerRepository;
-    private CustomerService customerService;
-    private UserService userService;
-    private Mapper mapper;
+    private final CustomerService customerService;
+    private final UserService userService;
+    private final TrainerService trainerService;
+    private final Mapper mapper;
 
 
     public TrainingSessionDto createSession(String trainerEmail, CreateTrainingSessionRequest request) {
         TrainingSession trainingSession = new TrainingSession();
 
-        Trainer trainer = trainerRepository.findTrainersByEmail(trainerEmail).orElseThrow();
+        Trainer trainer = trainerService.getTrainerByEmail(trainerEmail);
         Customer customer = customerService.getCustomerById(request.customerId());
         LocalDateTime createdAt = LocalDateTime.now();
+
 
         trainingSession.setTrainer(trainer);
         trainingSession.setCustomer(customer);
         trainingSession.setCreatedAt(createdAt);
+
+
+        validateDate(trainer.getId(), request.startDate(), request.duration());
+
         trainingSession.setStartDate(request.startDate());
         trainingSession.setDuration(request.duration());
 
         TrainingSession saveTrainingSession = trainingSessionRepository.save(trainingSession);
         return mapper.toDto(saveTrainingSession);
+    }
+
+    public void validateDate(Long trainerId, LocalDateTime startDate, int duration) {
+        List<TrainingSession> trainingSessions = trainingSessionRepository
+                .findOverlappingSessions(trainerId, startDate, duration);
+
+        if(!trainingSessions.isEmpty()){
+            throw new IllegalArgumentException("Provided data range overlaps with existing sessions");
+        }
     }
 
     public TrainingSessionDto updateSession(String emailTrainer,
@@ -62,10 +79,9 @@ public class TrainingSessionService {
 
     }
 
-
     public TrainingSession getTrainingSessionByIdAndEmail(String email, Long id) {
         return trainingSessionRepository.getTrainingSessionByIdAndTrainer_Email(id, email)
-                .orElseThrow(() -> new NoSuchElementException("Training session do not exists"));
+                .orElseThrow(() -> new NoSuchElementException("Training session does not exist."));
     }
 
 
@@ -84,4 +100,21 @@ public class TrainingSessionService {
 
         }
     }
+
+    public void deleteFutureTrainingSession(String trainerEmail, Long customerId) {
+        List<TrainingSession> futureSessions = trainingSessionRepository
+                .findAllByCustomer_IdAndTrainer_EmailAndStartDateAfter(customerId, trainerEmail, LocalDateTime.now());
+        trainingSessionRepository.deleteAll(futureSessions);
+    }
+
+    public void deleteSession(String trainerEmail, Long sessionId) {
+        TrainingSession session = trainingSessionRepository
+                .getTrainingSessionByIdAndTrainer_Email(sessionId, trainerEmail)
+                .orElseThrow(() -> new NoSuchElementException("Training session does not exist."));
+        if (!session.getStartDate().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Only future sessions can be deleted.");
+        }
+        trainingSessionRepository.delete(session);
+    }
+
 }

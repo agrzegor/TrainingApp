@@ -1,5 +1,6 @@
 package pl.coderslab.trainingapp.service;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,13 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
     private final TrainerRepository trainerRepository;
-    private Mapper mapper;
-    private PasswordEncoder passwordEncoder;
+    private final Mapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     public Customer createCustomer(UserDto userDto) {
 
@@ -42,8 +44,8 @@ public class CustomerService {
 
     public void addCustomerToTrainer(String email, String trainerIdentifier) {
         Trainer trainer1 = trainerRepository.findByIdentifier(trainerIdentifier)
-                .orElseThrow(() -> new NoSuchElementException("Trainer with provided identifier do not exists."));
-        Customer customer = customerRepository.getCustomersByEmail(email);
+                .orElseThrow(() -> new NoSuchElementException("Trainer with provided identifier does not exist."));
+        Customer customer = getCustomerByEmail(email);
         customer.setTrainer(trainer1);
         customerRepository.save(customer);
     }
@@ -51,32 +53,24 @@ public class CustomerService {
 
     public CustomerDto getCustomerDtoByEmail(String customerEmail) {
         return mapper.toDto(customerRepository.findCustomerByEmail(customerEmail)
-                .orElseThrow(() -> new NoSuchElementException("Customer with provided ID do not exists.")));
+                .orElseThrow(() -> new NoSuchElementException("Customer with provided ID does not exist.")));
 
     }
 
 
     public List<CustomerDto> getAllCustomersByTrainer(String email) {
         List<Customer> customerList = customerRepository.findAllByTrainer_Email(email);
-        List<CustomerDto> customerDtoList = new ArrayList<>();
 
-        for (Customer customer : customerList) {
-            CustomerDto customerDto = mapper.toDto(customer);
-            customerDtoList.add(customerDto);
-        }
-        return customerDtoList;
-
+        return customerList.stream().map(mapper::toDto).toList();
     }
 
     public CustomerDto updateCustomer(String customerEmail, UserDto userDto) {
         Customer customer = customerRepository.findCustomerByEmail(customerEmail)
                 .map(customerUpd -> {
-                    customerUpd.setFirstName(Optional.ofNullable(userDto.firstName())
-                            .orElse(customerUpd.getFirstName()));
-                    customerUpd.setLastName(Optional.ofNullable(userDto.lastName())
-                            .orElse(customerUpd.getLastName()));
-                    customerUpd.setPhone(Optional.ofNullable(userDto.phone())
-                            .orElse(customerUpd.getPhone()));
+                    Optional.ofNullable(userDto.firstName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setFirstName);
+                    Optional.ofNullable(userDto.lastName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setLastName);
+                    String phone = userDto.phone();
+                    customerUpd.setPhone(phone == null || phone.isBlank() ? null : phone);
                     return customerUpd;
                 }).orElseThrow(() -> new NoSuchElementException("No customer with provided id"));
         return mapper.toDto(customerRepository.save(customer));
@@ -84,11 +78,11 @@ public class CustomerService {
 
     private Customer getCustomerByEmail(String customerEmail) {
         return customerRepository.findCustomerByEmail(customerEmail)
-                .orElseThrow(() -> new NoSuchElementException("User with provided ID not exist."));
+                .orElseThrow(() -> new NoSuchElementException("User with provided ID does not exist."));
     }
 
     Customer getCustomerById(Long customerId) {
         return customerRepository.findCustomerById(customerId)
-                .orElseThrow(() -> new NoSuchElementException("User with provided ID not exist."));
+                .orElseThrow(() -> new NoSuchElementException("User with provided ID does not exist."));
     }
 }

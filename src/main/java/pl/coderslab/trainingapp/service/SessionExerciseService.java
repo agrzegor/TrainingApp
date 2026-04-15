@@ -1,24 +1,28 @@
 package pl.coderslab.trainingapp.service;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.api.CreateSessionExercisesRequest;
 import pl.coderslab.trainingapp.dto.SessionExerciseDto;
 import pl.coderslab.trainingapp.entity.*;
 import pl.coderslab.trainingapp.mappers.Mapper;
+import pl.coderslab.trainingapp.repository.ExerciseRepository;
 import pl.coderslab.trainingapp.repository.SessionExerciseRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
+@Transactional
 public class SessionExerciseService {
 
     private final SessionExerciseRepository sessionExerciseRepository;
     private final UserService userService;
     private final TrainingSessionService trainingSessionService;
     private final ExerciseService exerciseService;
-    private Mapper mapper;
+    private final Mapper mapper;
 
 
     public SessionExerciseDto addExerciseToSession(String trainerEmail, Long trainingSessionId,
@@ -55,6 +59,20 @@ public class SessionExerciseService {
                         .toList();
             }
         }
+
+
+    public void removeExerciseFromSession(String trainerEmail, Long sessionId, Long exerciseId) {
+        TrainingSession trainingSession = trainingSessionService
+                .getTrainingSessionByIdAndEmail(trainerEmail, sessionId);
+
+        SessionExercise sessionExercise = sessionExerciseRepository
+                .findSessionExerciseByTrainingSession_IdAndExercise_Id(trainingSession.getId(), exerciseId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Exercise not found in this session"));
+
+        sessionExerciseRepository.deleteById(sessionExercise.getId());
     }
+}
 
 

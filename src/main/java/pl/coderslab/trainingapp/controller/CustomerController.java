@@ -1,13 +1,11 @@
 package pl.coderslab.trainingapp.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.CustomerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
-import pl.coderslab.trainingapp.entity.TrainingSession;
 import pl.coderslab.trainingapp.service.CustomerService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -21,6 +19,7 @@ public class CustomerController {
 
 
     @PostMapping("/customers/{trainerIdentifier}")
+    @ResponseStatus(value = HttpStatus.ACCEPTED)
     public void addCustomerToTrainer(@AuthenticationPrincipal String email,
                                      @PathVariable("trainerIdentifier") String trainerIdentifier) {
         customerService.addCustomerToTrainer(email, trainerIdentifier);
@@ -37,13 +36,4 @@ public class CustomerController {
         return customerService.updateCustomer(email, userDto);
     }
 
-
-    /*
-     * @TODO
-     */
-    @GetMapping("/customers/session")
-    public List<TrainingSession> getAllCustomerSession(@AuthenticationPrincipal String email) {
-
-        return null;
-    }
 }

@@ -21,32 +21,36 @@ public class Mapper {
     }
 
     public CustomerDto toDto(Customer customer) {
+        Long trainerId = customer.getTrainer() != null ? customer.getTrainer().getId() : null;
         return new CustomerDto(
                 customer.getId(),
                 customer.getFirstName(),
                 customer.getLastName(),
-                customer.getPhone()
+                customer.getPhone(),
+                trainerId
         );
     }
 
     public TrainerDto toDto(Trainer trainer) {
-        return new TrainerDto(
-                trainer.getId(),
-                trainer.getFirstName(),
-                trainer.getLastName(),
-                trainer.getPhone()
-        );
+        return TrainerDto.builder()
+                .identifier(trainer.getIdentifier())
+                .firstName(trainer.getFirstName())
+                .lastName(trainer.getLastName())
+                .phone(trainer.getPhone())
+                .build();
     }
 
     public TrainingSessionDto toDto(TrainingSession trainingSession) {
         return TrainingSessionDto.builder()
+                .id(trainingSession.getId())
                 .trainerId(trainingSession.getTrainer().getId())
                 .customerId(trainingSession.getCustomer().getId())
+                .customerFirstName(trainingSession.getCustomer().getFirstName())
+                .customerLastName(trainingSession.getCustomer().getLastName())
                 .createdAt(trainingSession.getCreatedAt())
                 .startDate(trainingSession.getStartDate())
                 .duration(trainingSession.getDuration())
                 .build();
-
     }
 
     public SessionExerciseDto toDto(SessionExercise sessionExercise) {

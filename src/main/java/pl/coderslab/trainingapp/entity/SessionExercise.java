@@ -9,22 +9,21 @@ import lombok.Setter;
 @Setter
 public class SessionExercise {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "training_session_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "training_session_id", nullable = false)
     private TrainingSession trainingSession;
 
-        private Integer reps;
+    private Integer reps;
 
-        private Integer series;
+    private Integer series;
 
-        private Integer weight;
+    private Integer weight;
 
-        @ManyToOne
-        @JoinColumn(name ="exercise_id")
-        private Exercise exercise;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exercise_id", nullable = false)
+    private Exercise exercise;
 }

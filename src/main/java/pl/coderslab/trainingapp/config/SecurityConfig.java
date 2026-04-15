@@ -76,28 +76,29 @@ public class SecurityConfig {
      * Authentication przechowuje dane zalogowanego użytkownika (UserDetails w Spring).
      * getAuthorities() zwraca wszystkie role/uprawnienia użytkownika
      */
-    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return (request, response, authentication) -> {
-
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            boolean isTrainer = authorities.stream()
-                    .anyMatch(a -> Objects.equals(a.getAuthority(), "TRAINER"));
-            if (isTrainer) {
-                response.sendRedirect("/api/trainers/me");
-            } else {
-                response.sendRedirect("/api/customers/me");
-            }
-        };
-    }
+//    @Bean
+//    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+//        return (request, response, authentication) -> {
+//
+//            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+//            boolean isTrainer = authorities.stream()
+//                    .anyMatch(a -> Objects.equals(a.getAuthority(), "TRAINER"));
+//            if (isTrainer) {
+//                response.sendRedirect("/api/trainers/me");
+//            } else {
+//                response.sendRedirect("/api/customers/me");
+//            }
+//
+//        };
+//    }
 
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("http://localhost:8080"));
-        configuration.setAllowedMethods(List.of("GET","POST"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8080", "http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET","POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -125,11 +126,7 @@ public class SecurityConfig {
         return provider;
     }
 
-//    @Bean
-//   public UserDetailsService userDetailsService() {
-//        return username -> userRepository.findByEmail(username)
-//                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

@@ -1,13 +1,13 @@
 package pl.coderslab.trainingapp.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 
-
+@Builder
 public record TrainerDto(
-        Long id,
+        String identifier,
         String firstName,
         String lastName,
       String phone
-      //  List<CustomerDto> customerDtoList
+
 ) {
 }

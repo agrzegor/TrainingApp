@@ -5,8 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Entity (name = "training_session")
+@Entity
+@Table (name = "training_session")
 @Setter
 @Getter
 public class TrainingSession {
@@ -15,19 +17,23 @@ public class TrainingSession {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "trainer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id", nullable = false)
     private Trainer trainer;
 
-    @ManyToOne
-    @JoinColumn (name = "customer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    private LocalDateTime createdAt;
+    @OneToMany(mappedBy = "trainingSession", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SessionExercise> sessionExercises;
+
+    private LocalDateTime  createdAt;
 
     private LocalDateTime startDate;
 
-    private int duration;
+    @Column(nullable = false)
+    private Integer duration;
 
 
 }

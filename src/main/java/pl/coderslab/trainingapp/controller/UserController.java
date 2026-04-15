@@ -6,9 +6,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.UserDto;
+import pl.coderslab.trainingapp.entity.User;
 import pl.coderslab.trainingapp.security.JwtService;
 import pl.coderslab.trainingapp.dto.api.LoginResponse;
 import pl.coderslab.trainingapp.service.UserService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -32,8 +35,11 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody UserDto loginUserDto) {
         UserDetails authenticatedUser = userService.authenticate(loginUserDto);
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
+        Map<String, Object> extraClaims = Map.of(
+                "userType", ((User) authenticatedUser).getUserType().toString()
+        );
+        String jwtToken = jwtService.generateToken(extraClaims, authenticatedUser);
+        LoginResponse loginResponse = new LoginResponse(jwtToken, jwtService.getExpirationTime());
         return ResponseEntity.ok(loginResponse);
     }
 

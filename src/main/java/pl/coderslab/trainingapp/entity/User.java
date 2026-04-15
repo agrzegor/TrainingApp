@@ -28,11 +28,8 @@ public abstract class User implements UserDetails {
     @NotNull(message = "User type is required")
     private UserType userType;
 
-    @Pattern(
-            regexp = "^[A-Za-z]{2,50}$",
-            message = "First name must be 2-50 characters"
-    )
     @NotBlank
+    @Size(min = 2, max = 50, message = "First name must be 2-50 characters")
     private String firstName;
 
     @NotBlank(message = "Last name is required")

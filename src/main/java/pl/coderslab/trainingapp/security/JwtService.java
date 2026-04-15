@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,17 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long jwtExpiration;
 
+    @PostConstruct
+    private void validateSecretKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException(
+                    "security.jwt.secret-key must be at least 256 bits (32 bytes) for HS256, " +
+                    "but was " + (keyBytes.length * 8) + " bits."
+            );
+        }
+    }
+
     /**
      * Wyciąga nazwę użytkownika (subject) zakodowaną w tokenie JWT.
      *
@@ -37,7 +49,6 @@ public class JwtService {
 
     /**
      * Uniwersalna metoda do wyciągania dowolnej informacji (claim) z tokena.
-     *
      * @param token Ciąg znaków reprezentujący token JWT.
      * @param claimsResolver Funkcja określająca, jaki konkretnie claim ma zostać pobrany.
      * @param <T> Typ zwracanej informacji.
@@ -50,7 +61,6 @@ public class JwtService {
     }
 
     /**
-     *
      * @param userDetails
      * @return
      * Tworzenie tokenu bez dodatkowych danych
@@ -62,7 +72,6 @@ public class JwtService {
 
     /**
      * Generuje nowy token JWT dla podanego użytkownika.
-     *
      * @param userDetails Obiekt zawierający dane o zalogowanym użytkowniku.
      * @return Zaszyfrowany token JWT w formie Stringa.
      */
