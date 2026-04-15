@@ -11,9 +11,10 @@ import pl.coderslab.trainingapp.entity.Trainer;
 import pl.coderslab.trainingapp.mappers.Mapper;
 import pl.coderslab.trainingapp.repository.CustomerRepository;
 import pl.coderslab.trainingapp.repository.TrainerRepository;
+import pl.coderslab.trainingapp.repository.TrainingSessionRepository;
 
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -27,8 +28,12 @@ public class CustomerService {
     private final TrainerRepository trainerRepository;
     private final Mapper mapper;
     private final PasswordEncoder passwordEncoder;
+    private final TrainingSessionRepository trainingSessionRepository;
 
     public Customer createCustomer(UserDto userDto) {
+        if (customerRepository.existsByEmail(userDto.email())) {
+            throw new IllegalArgumentException("Email already in use");
+        }
 
         Customer customer = new Customer();
         customer.setFirstName(userDto.firstName());
@@ -84,5 +89,18 @@ public class CustomerService {
     Customer getCustomerById(Long customerId) {
         return customerRepository.findCustomerById(customerId)
                 .orElseThrow(() -> new NoSuchElementException("User with provided ID does not exist."));
+    }
+
+    public void selfUnlinkFromTrainer(String email) {
+        Customer customer = getCustomerByEmail(email);
+        if (customer.getTrainer() == null) {
+            throw new NoSuchElementException("Customer is not linked to any trainer.");
+        }
+        trainingSessionRepository.deleteAll(
+                trainingSessionRepository.findAllByCustomer_IdAndTrainer_EmailAndStartDateAfter(
+                        customer.getId(), customer.getTrainer().getEmail(), LocalDateTime.now())
+        );
+        customer.setTrainer(null);
+        customerRepository.save(customer);
     }
 }

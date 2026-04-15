@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { User, Phone, Mail, Pencil, Copy, Check, Link2 } from 'lucide-react'
+import { User, Phone, Mail, Pencil, Copy, Check, Link2, Unlink } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import api from '@/lib/api'
 import { Button } from '@/components/ui/button'
@@ -57,6 +57,8 @@ export default function ProfilePage() {
   const [trainerIdentifier, setTrainerIdentifier] = useState('')
   const [linking, setLinking] = useState(false)
   const [linkError, setLinkError] = useState('')
+  const [unlinkOpen, setUnlinkOpen] = useState(false)
+  const [unlinking, setUnlinking] = useState(false)
 
   const email = getEmailFromToken()
 
@@ -117,6 +119,24 @@ export default function ProfilePage() {
       setLinkError(e.response?.data?.message || 'Invalid trainer identifier')
     } finally {
       setLinking(false)
+    }
+  }
+
+  const handleUnlink = async () => {
+    setUnlinking(true)
+    try {
+      await api.delete('/customers/me/trainer')
+      setUnlinkOpen(false)
+      setAssignedTrainer(null)
+      if (profile && !isTrainer(profile)) {
+        setProfile({ ...profile, trainerId: null })
+      }
+      toast({ title: 'Unlinked', description: 'You have been unlinked from your trainer and future sessions have been cancelled.' })
+    } catch (err) {
+      const e = err as AxiosError<{ message: string }>
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to unlink from trainer', variant: 'destructive' })
+    } finally {
+      setUnlinking(false)
     }
   }
 
@@ -250,11 +270,21 @@ export default function ProfilePage() {
               <p className="text-sm text-slate-500">No trainer linked yet.</p>
             )}
           </CardContent>
-          <CardFooter>
+          <CardFooter className="gap-2">
             <Button variant="outline" onClick={() => setLinkOpen(true)}>
               <Link2 className="h-4 w-4 mr-2" />
               {assignedTrainer ? 'Change Trainer' : 'Link to Trainer'}
             </Button>
+            {assignedTrainer && (
+              <Button
+                variant="outline"
+                className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                onClick={() => setUnlinkOpen(true)}
+              >
+                <Unlink className="h-4 w-4 mr-2" />
+                Unlink Trainer
+              </Button>
+            )}
           </CardFooter>
         </Card>
       )}
@@ -285,6 +315,32 @@ export default function ProfilePage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unlink from trainer dialog */}
+      <Dialog open={unlinkOpen} onOpenChange={setUnlinkOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unlink from Trainer</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to unlink from{' '}
+              <span className="font-semibold">
+                {assignedTrainer?.firstName} {assignedTrainer?.lastName}
+              </span>?
+            </DialogDescription>
+          </DialogHeader>
+          <Alert variant="destructive">
+            <AlertDescription>
+              This will also <span className="font-semibold">cancel all upcoming training sessions</span> with this trainer. Past sessions will be kept.
+            </AlertDescription>
+          </Alert>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUnlinkOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleUnlink} disabled={unlinking}>
+              {unlinking ? 'Unlinking...' : 'Unlink Trainer'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
