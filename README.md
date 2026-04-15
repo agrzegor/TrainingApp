@@ -49,6 +49,7 @@ A full-stack personal training management application that allows trainers to ma
 ### Customer
 - View and edit own profile
 - Link to a trainer using their identifier code
+- Unlink from trainer (automatically cancels all future sessions)
 - View all assigned training sessions
 
 ### Sessions
@@ -114,6 +115,7 @@ Exercise         — local record linked to external exercise ID (RapidAPI)
 | GET | `/api/customers/me` | Get own customer profile | Customer |
 | PUT | `/api/customers` | Update customer profile | Customer |
 | POST | `/api/customers/{identifier}` | Link to trainer | Customer |
+| DELETE | `/api/customers/me/trainer` | Unlink from trainer (cancels future sessions) | Customer |
 | GET | `/api/sessions` | List sessions | Trainer / Customer |
 | POST | `/api/sessions` | Create session | Trainer |
 | PUT | `/api/sessions/{id}` | Update session | Trainer |
