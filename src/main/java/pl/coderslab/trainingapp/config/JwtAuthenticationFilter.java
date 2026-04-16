@@ -50,29 +50,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             final String userEmail = jwtService.extractUsername(jwt);
 
-            /**
-             * Gets current authentication (if any).
-             * Prevents re-authenticating an already authenticated user.
-             */
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
-                    /**
-                     * Credentials: null (since already authenticated via JWT)
-                     */
+
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userEmail,
                             null,
                             userDetails.getAuthorities()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    /**
-                     * Stores authentication in Spring Security context.
-                     * The user is considered authenticated in this request.
-                     */
+
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
