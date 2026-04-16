@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.coderslab.trainingapp.dto.*;
 import pl.coderslab.trainingapp.dto.api.CreateSessionExercisesRequest;
 import pl.coderslab.trainingapp.dto.api.CreateTrainingSessionRequest;
+import pl.coderslab.trainingapp.dto.api.UpdateSessionExercise;
 import pl.coderslab.trainingapp.dto.api.UpdateTrainingSessionRequest;
 import pl.coderslab.trainingapp.service.SessionExerciseService;
 import pl.coderslab.trainingapp.service.TrainingSessionService;
@@ -58,7 +59,7 @@ public class TrainingSessionController {
 
     @GetMapping("/sessions/{trainingSessionId}/exercises")
     public List<SessionExerciseDto> getAllSessionsExercisesById(@AuthenticationPrincipal String email,
-                                                       @PathVariable Long trainingSessionId) {
+                                                                @PathVariable Long trainingSessionId) {
         return sessionExerciseService.getSessionExercises(email, trainingSessionId);
     }
 
@@ -72,9 +73,19 @@ public class TrainingSessionController {
 
     @DeleteMapping("/sessions/{sessionId}/exercises/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeExerciseFromSession (@AuthenticationPrincipal String trainerEmail,
-                                           @PathVariable Long sessionId,
-                                           @PathVariable Long exerciseId){
+    public void removeExerciseFromSession(@AuthenticationPrincipal String trainerEmail,
+                                          @PathVariable Long sessionId,
+                                          @PathVariable Long exerciseId) {
         sessionExerciseService.removeExerciseFromSession(trainerEmail, sessionId, exerciseId);
+    }
+
+    @PutMapping("/sessions/{sessionId}/exercises/{exerciseId}")
+    public SessionExerciseDto updateExercise(@AuthenticationPrincipal String trainerEmail,
+                                             @PathVariable Long sessionId,
+                                             @PathVariable Long exerciseId,
+                                             @Valid @RequestBody UpdateSessionExercise request) {
+
+        return sessionExerciseService.updateExercise(trainerEmail,sessionId,exerciseId,request);
+
     }
 }

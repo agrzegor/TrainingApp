@@ -28,7 +28,7 @@ public abstract class User implements UserDetails {
     @NotNull(message = "User type is required")
     private UserType userType;
 
-    @NotBlank
+    @NotBlank(message = "First name is required")
     @Size(min = 2, max = 50, message = "First name must be 2-50 characters")
     private String firstName;
 

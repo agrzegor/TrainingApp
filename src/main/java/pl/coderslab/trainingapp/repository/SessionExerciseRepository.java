@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import pl.coderslab.trainingapp.entity.SessionExercise;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SessionExerciseRepository extends JpaRepository<SessionExercise, Long> {
@@ -27,4 +28,6 @@ public interface SessionExerciseRepository extends JpaRepository<SessionExercise
 
 
     List<SessionExercise> findSessionExerciseByTrainingSession_IdAndExercise_Id(Long trainingSessionId, Long exerciseId);
+
+    Optional<SessionExercise> findByIdAndTrainingSession_Id(Long id, Long trainingSessionId);
 }

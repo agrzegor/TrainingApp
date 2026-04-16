@@ -43,6 +43,7 @@ A full-stack personal training management application that allows trainers to ma
 - Create, update, and delete training sessions (future sessions only)
 - Overlap validation — cannot schedule two sessions in the same time window
 - Add exercises to sessions (searched from external API), configure sets, reps, and weight
+- Edit exercise parameters (sets, reps, weight) within a session
 - Remove individual exercises from a session
 - View full exercise details (overview, instructions, tips, video)
 
@@ -122,6 +123,7 @@ Exercise         — local record linked to external exercise ID (RapidAPI)
 | DELETE | `/api/sessions/{id}` | Delete future session | Trainer |
 | GET | `/api/sessions/{id}/exercises` | List session exercises | Trainer / Customer |
 | POST | `/api/sessions/{id}/exercises` | Add exercise to session | Trainer |
+| PUT | `/api/sessions/{id}/exercises/{exerciseId}` | Update exercise in session | Trainer |
 | DELETE | `/api/sessions/{id}/exercises/{exerciseId}` | Remove exercise from session | Trainer |
 | GET | `/api/exercises/search?search=` | Search exercises (external API) | Trainer |
 | GET | `/api/exercises/{id}` | Get exercise details | Trainer / Customer |
