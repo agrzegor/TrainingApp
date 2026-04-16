@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.CustomerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
+import pl.coderslab.trainingapp.dto.api.UpdateProfileRequest;
 import pl.coderslab.trainingapp.entity.Customer;
 import pl.coderslab.trainingapp.entity.Trainer;
 import pl.coderslab.trainingapp.mappers.Mapper;
@@ -48,17 +49,22 @@ public class CustomerService {
     }
 
     public void addCustomerToTrainer(String email, String trainerIdentifier) {
-        Trainer trainer1 = trainerRepository.findByIdentifier(trainerIdentifier)
+        Trainer trainer = trainerRepository.findByIdentifier(trainerIdentifier)
                 .orElseThrow(() -> new NoSuchElementException("Trainer with provided identifier does not exist."));
         Customer customer = getCustomerByEmail(email);
-        customer.setTrainer(trainer1);
+
+        if (customer.getTrainer() != null) {
+            throw new IllegalArgumentException("Customer is already assigned to a trainer. Unlink first before reassigning.");
+        }
+
+        customer.setTrainer(trainer);
         customerRepository.save(customer);
     }
 
 
     public CustomerDto getCustomerDtoByEmail(String customerEmail) {
         return mapper.toDto(customerRepository.findCustomerByEmail(customerEmail)
-                .orElseThrow(() -> new NoSuchElementException("Customer with provided ID does not exist.")));
+                .orElseThrow(() -> new NoSuchElementException("Customer with provided email does not exist.")));
 
     }
 
@@ -69,12 +75,12 @@ public class CustomerService {
         return customerList.stream().map(mapper::toDto).toList();
     }
 
-    public CustomerDto updateCustomer(String customerEmail, UserDto userDto) {
+    public CustomerDto updateCustomer(String customerEmail, UpdateProfileRequest request) {
         Customer customer = customerRepository.findCustomerByEmail(customerEmail)
                 .map(customerUpd -> {
-                    Optional.ofNullable(userDto.firstName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setFirstName);
-                    Optional.ofNullable(userDto.lastName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setLastName);
-                    String phone = userDto.phone();
+                    Optional.ofNullable(request.firstName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setFirstName);
+                    Optional.ofNullable(request.lastName()).filter(s -> !s.isBlank()).ifPresent(customerUpd::setLastName);
+                    String phone = request.phone();
                     customerUpd.setPhone(phone == null || phone.isBlank() ? null : phone);
                     return customerUpd;
                 }).orElseThrow(() -> new NoSuchElementException("No customer with provided id"));
@@ -87,7 +93,7 @@ public class CustomerService {
     }
 
     Customer getCustomerById(Long customerId) {
-        return customerRepository.findCustomerById(customerId)
+        return customerRepository.findById(customerId)
                 .orElseThrow(() -> new NoSuchElementException("User with provided ID does not exist."));
     }
 

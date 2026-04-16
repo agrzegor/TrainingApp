@@ -2,9 +2,13 @@ package pl.coderslab.trainingapp.controller;
 
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import pl.coderslab.trainingapp.dto.UserDto;
 import pl.coderslab.trainingapp.entity.User;
 import pl.coderslab.trainingapp.security.JwtService;
@@ -29,11 +33,11 @@ public class UserController {
     @PostMapping("/signup")
     public ResponseEntity<UserDto> register(@RequestBody @Valid UserDto registerUserDto) {
         UserDto registeredUser = userService.createUser(registerUserDto);
-        return ResponseEntity.ok(registeredUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody UserDto loginUserDto) {
+    public ResponseEntity<LoginResponse> authenticate(@Valid @RequestBody UserDto loginUserDto) {
         UserDetails authenticatedUser = userService.authenticate(loginUserDto);
         Map<String, Object> extraClaims = Map.of(
                 "userType", ((User) authenticatedUser).getUserType().toString()

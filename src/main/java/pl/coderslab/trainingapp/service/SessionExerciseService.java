@@ -1,7 +1,6 @@
 package pl.coderslab.trainingapp.service;
 
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.api.CreateSessionExercisesRequest;
@@ -11,6 +10,7 @@ import pl.coderslab.trainingapp.entity.*;
 import pl.coderslab.trainingapp.mappers.Mapper;
 import pl.coderslab.trainingapp.repository.ExerciseRepository;
 import pl.coderslab.trainingapp.repository.SessionExerciseRepository;
+import pl.coderslab.trainingapp.repository.TrainingSessionRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -26,7 +26,7 @@ public class SessionExerciseService {
     private final TrainingSessionService trainingSessionService;
     private final ExerciseService exerciseService;
     private final Mapper mapper;
-
+    private final TrainingSessionRepository trainingSessionRepository;
 
     public SessionExerciseDto addExerciseToSession(String trainerEmail, Long trainingSessionId,
                                                    CreateSessionExercisesRequest request) {
@@ -49,32 +49,29 @@ public class SessionExerciseService {
 
     public List<SessionExerciseDto> getSessionExercises(String email, Long id){
             User user = userService.getUser(email);
-            if (user.getUserType() == UserType.CUSTOMER) {
-                return sessionExerciseRepository
+            return switch (user.getUserType()) {
+                case CUSTOMER -> sessionExerciseRepository
                         .getSessionExercisesByTrainingSession_IdAndTrainingSessionCustomer_Id(id, user.getId())
                         .stream()
                         .map(mapper::toDto).toList();
-            } else {
-                return sessionExerciseRepository
+                case TRAINER -> sessionExerciseRepository
                         .getSessionExercisesByTrainingSession_IdAndTrainingSession_Trainer_Id(id, user.getId())
                         .stream()
                         .map(mapper::toDto)
                         .toList();
-            }
+            };
         }
 
-
-    public void removeExerciseFromSession(String trainerEmail, Long sessionId, Long exerciseId) {
+    public void removeExerciseFromSession(String trainerEmail, Long sessionId, Long sessionExerciseId) {
         TrainingSession trainingSession = trainingSessionService
                 .getTrainingSessionByIdAndEmail(trainerEmail, sessionId);
 
-        SessionExercise sessionExercise = sessionExerciseRepository
-                .findSessionExerciseByTrainingSession_IdAndExercise_Id(trainingSession.getId(), exerciseId)
-                .stream()
+        SessionExercise sessionExercise = trainingSession.getSessionExercises().stream()
+                .filter(s -> s.getId().equals(sessionExerciseId))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Exercise not found in this session"));
-
-        sessionExerciseRepository.deleteById(sessionExercise.getId());
+        trainingSession.getSessionExercises().remove(sessionExercise);
+        trainingSessionRepository.save(trainingSession);
     }
 
     public SessionExerciseDto updateExercise(String trainerEmail, Long sessionId, Long exerciseId,  UpdateSessionExercise request) {

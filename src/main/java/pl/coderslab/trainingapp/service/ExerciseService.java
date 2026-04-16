@@ -19,6 +19,8 @@ import pl.coderslab.trainingapp.entity.Exercise;
 import pl.coderslab.trainingapp.mappers.Mapper;
 import pl.coderslab.trainingapp.repository.ExerciseRepository;
 
+import org.springframework.dao.DataIntegrityViolationException;
+
 import java.net.URI;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -56,6 +58,9 @@ public class ExerciseService {
                     new ParameterizedTypeReference<GetExerciseDetailsResponse>() {
                     }
             ).getBody();
+            if (response == null || response.data() == null) {
+                throw new RuntimeException("Empty response from external API for id: " + externalId);
+            }
             return response;
 
         } catch (RestClientException e) {
@@ -84,12 +89,23 @@ public class ExerciseService {
                     }
             ).getBody();
 
+            if (response == null || response.data() == null) {
+                throw new RuntimeException("Empty response from external API for search: " + search);
+            }
+
             return response.data().stream()
                     .map(el -> exerciseRepository.findExerciseByExternalExerciseId(el.exerciseId())
-                            .orElseGet(() -> exerciseRepository.save(Exercise.builder()
-                                    .externalExerciseId(el.exerciseId())
-                                    .name(el.name())
-                                    .build())))
+                            .orElseGet(() -> {
+                                try {
+                                    return exerciseRepository.save(Exercise.builder()
+                                            .externalExerciseId(el.exerciseId())
+                                            .name(el.name())
+                                            .build());
+                                } catch (DataIntegrityViolationException e) {
+                                    return exerciseRepository.findExerciseByExternalExerciseId(el.exerciseId())
+                                            .orElseThrow(() -> new RuntimeException("Failed to save exercise", e));
+                                }
+                            }))
                     .map(mapper::toDto)
                     .toList();
 
@@ -102,8 +118,8 @@ public class ExerciseService {
 
 
     public ExerciseDto getDetailsByExerciseId(Long exerciseId) {
-        Exercise exercise = exerciseRepository.findExerciseById(exerciseId)
-                .orElseThrow(() -> new RuntimeException("Not found"));
+        Exercise exercise = exerciseRepository.findById(exerciseId)
+                .orElseThrow(() -> new NoSuchElementException("Exercise not found."));
 
         String externalId = exercise.getExternalExerciseId();
         GetExerciseDetailsResponse response = getDetails(externalId);
@@ -112,7 +128,7 @@ public class ExerciseService {
     }
 
     public Exercise getExerciseById(Long id) {
-        return exerciseRepository.findExerciseById(id)
+        return exerciseRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Exercise does not exist."));
     }
 }

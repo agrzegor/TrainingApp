@@ -21,12 +21,12 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
 
     List<TrainingSession> findAllByCustomer_IdAndTrainer_EmailAndStartDateAfter(Long customerId, String trainerEmail, LocalDateTime startDateAfter);
 
-    List<TrainingSession> streamAllByStartDate(LocalDateTime startDate);
-
-    @Query("SELECT ts FROM TrainingSession ts WHERE ts.trainer.id = :trainerId AND (" +
+    @Query("SELECT ts FROM TrainingSession ts WHERE ts.trainer.id = :trainerId " +
+            "AND (:excludeSessionId IS NULL OR ts.id != :excludeSessionId) AND (" +
             "ts.startDate BETWEEN :startDate AND TIMESTAMPADD(MINUTE, :duration, :startDate) OR " +
             ":startDate BETWEEN ts.startDate AND TIMESTAMPADD(MINUTE, ts.duration, ts.startDate))")
     List<TrainingSession> findOverlappingSessions(@Param("trainerId") Long trainerId,
                                                   @Param("startDate") LocalDateTime startDate,
-                                                  @Param("duration") int duration);
+                                                  @Param("duration") int duration,
+                                                  @Param("excludeSessionId") Long excludeSessionId);
 }

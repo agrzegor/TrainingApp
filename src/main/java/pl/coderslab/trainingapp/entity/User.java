@@ -42,11 +42,12 @@ public abstract class User implements UserDetails {
     private String email;
 
     @Pattern(
-            regexp = "^[0-9+\\-() ]{7,20}$",
+            regexp = "^\\+?[0-9]{7,15}$",
             message = "Invalid phone number format"
     )
     private String phone;
 
+    @Column(nullable = false)
     private String password;
 
     @Override

@@ -34,15 +34,19 @@ public class TrainingSessionService {
 
         Trainer trainer = trainerService.getTrainerByEmail(trainerEmail);
         Customer customer = customerService.getCustomerById(request.customerId());
-        LocalDateTime createdAt = LocalDateTime.now();
 
+        if (customer.getTrainer() == null || !customer.getTrainer().getId().equals(trainer.getId())) {
+            throw new IllegalArgumentException("Customer is not assigned to this trainer.");
+        }
+
+        LocalDateTime createdAt = LocalDateTime.now();
 
         trainingSession.setTrainer(trainer);
         trainingSession.setCustomer(customer);
         trainingSession.setCreatedAt(createdAt);
 
 
-        validateDate(trainer.getId(), request.startDate(), request.duration());
+        validateDate(trainer.getId(), request.startDate(), request.duration(), null);
 
         trainingSession.setStartDate(request.startDate());
         trainingSession.setDuration(request.duration());
@@ -51,9 +55,9 @@ public class TrainingSessionService {
         return mapper.toDto(saveTrainingSession);
     }
 
-    public void validateDate(Long trainerId, LocalDateTime startDate, int duration) {
+    private void validateDate(Long trainerId, LocalDateTime startDate, int duration, Long excludeSessionId) {
         List<TrainingSession> trainingSessions = trainingSessionRepository
-                .findOverlappingSessions(trainerId, startDate, duration);
+                .findOverlappingSessions(trainerId, startDate, duration, excludeSessionId);
 
         if(!trainingSessions.isEmpty()){
             throw new IllegalArgumentException("Provided data range overlaps with existing sessions");
@@ -67,13 +71,18 @@ public class TrainingSessionService {
         Optional<TrainingSession> trainingSessionOpt = trainingSessionRepository
                 .getTrainingSessionByIdAndTrainer_Email(sessionId, emailTrainer);
 
-        TrainingSession trainingSession = trainingSessionOpt.map(trainingSession1 -> {
-            trainingSession1.setStartDate(Optional.ofNullable(updTrainingSessionRequest.startDate())
-                    .orElse(trainingSession1.getStartDate()));
-            trainingSession1.setDuration(Optional.ofNullable(updTrainingSessionRequest.duration())
-                    .orElse(trainingSession1.getDuration()));
-            return trainingSession1;
-        }).orElseThrow(() -> new NoSuchElementException("No session with provided trainer"));
+        TrainingSession trainingSession = trainingSessionOpt
+                .orElseThrow(() -> new NoSuchElementException("No session with provided trainer"));
+
+        LocalDateTime newStartDate = Optional.ofNullable(updTrainingSessionRequest.startDate())
+                .orElse(trainingSession.getStartDate());
+        int newDuration = Optional.ofNullable(updTrainingSessionRequest.duration())
+                .orElse(trainingSession.getDuration());
+
+        validateDate(trainingSession.getTrainer().getId(), newStartDate, newDuration, sessionId);
+
+        trainingSession.setStartDate(newStartDate);
+        trainingSession.setDuration(newDuration);
 
         return mapper.toDto(trainingSessionRepository.save(trainingSession));
 

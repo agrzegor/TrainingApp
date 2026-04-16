@@ -41,12 +41,14 @@ public class Mapper {
     }
 
     public TrainingSessionDto toDto(TrainingSession trainingSession) {
+        Trainer trainer = trainingSession.getTrainer();
+        Customer customer = trainingSession.getCustomer();
         return TrainingSessionDto.builder()
                 .id(trainingSession.getId())
-                .trainerId(trainingSession.getTrainer().getId())
-                .customerId(trainingSession.getCustomer().getId())
-                .customerFirstName(trainingSession.getCustomer().getFirstName())
-                .customerLastName(trainingSession.getCustomer().getLastName())
+                .trainerId(trainer != null ? trainer.getId() : null)
+                .customerId(customer != null ? customer.getId() : null)
+                .customerFirstName(customer != null ? customer.getFirstName() : null)
+                .customerLastName(customer != null ? customer.getLastName() : null)
                 .createdAt(trainingSession.getCreatedAt())
                 .startDate(trainingSession.getStartDate())
                 .duration(trainingSession.getDuration())
@@ -54,10 +56,11 @@ public class Mapper {
     }
 
     public SessionExerciseDto toDto(SessionExercise sessionExercise) {
+        Exercise exercise = sessionExercise.getExercise();
         return SessionExerciseDto.builder()
                 .id(sessionExercise.getId())
-                .exerciseName(sessionExercise.getExercise().getName())
-                .exerciseId(sessionExercise.getExercise().getId())
+                .exerciseName(exercise != null ? exercise.getName() : null)
+                .exerciseId(exercise != null ? exercise.getId() : null)
                 .trainingSessionId(sessionExercise.getTrainingSession().getId())
                 .reps(sessionExercise.getReps())
                 .series(sessionExercise.getSeries())

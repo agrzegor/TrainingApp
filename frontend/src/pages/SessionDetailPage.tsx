@@ -329,7 +329,7 @@ export default function SessionDetailPage() {
                             variant="destructive"
                             size="sm"
                             disabled={deletingExercise}
-                            onClick={() => handleDeleteExercise(ex.exerciseId)}
+                            onClick={() => handleDeleteExercise(ex.id)}
                           >
                             {deletingExercise ? 'Removing...' : 'Confirm'}
                           </Button>

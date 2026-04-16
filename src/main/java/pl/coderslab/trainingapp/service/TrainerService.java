@@ -3,18 +3,21 @@ package pl.coderslab.trainingapp.service;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import pl.coderslab.trainingapp.dto.CustomerDto;
 import pl.coderslab.trainingapp.dto.TrainerDto;
 import pl.coderslab.trainingapp.dto.UserDto;
+import pl.coderslab.trainingapp.dto.api.UpdateProfileRequest;
 import pl.coderslab.trainingapp.entity.Customer;
 import pl.coderslab.trainingapp.entity.Trainer;
-import pl.coderslab.trainingapp.entity.TrainingSession;
 import pl.coderslab.trainingapp.mappers.Mapper;
 import pl.coderslab.trainingapp.repository.CustomerRepository;
 import pl.coderslab.trainingapp.repository.TrainerRepository;
+import pl.coderslab.trainingapp.repository.TrainingSessionRepository;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -25,6 +28,7 @@ public class TrainerService {
 
     private final TrainerRepository trainerRepository;
     private final CustomerRepository customerRepository;
+    private final TrainingSessionRepository trainingSessionRepository;
     private final CustomerService customerService;
     private final Mapper mapper;
     private final PasswordEncoder passwordEncoder;
@@ -48,11 +52,11 @@ public class TrainerService {
         return trainerRepository.save(trainer);
     }
 
-    public TrainerDto updateTrainerDetails(String trainerEmail, UserDto userDto) {
+    public TrainerDto updateTrainerDetails(String trainerEmail, UpdateProfileRequest request) {
         Trainer trainer = getTrainerByEmail(trainerEmail);
-        Optional.ofNullable(userDto.firstName()).filter(s -> !s.isBlank()).ifPresent(trainer::setFirstName);
-        Optional.ofNullable(userDto.lastName()).filter(s -> !s.isBlank()).ifPresent(trainer::setLastName);
-        String phone = userDto.phone();
+        Optional.ofNullable(request.firstName()).filter(s -> !s.isBlank()).ifPresent(trainer::setFirstName);
+        Optional.ofNullable(request.lastName()).filter(s -> !s.isBlank()).ifPresent(trainer::setLastName);
+        String phone = request.phone();
         trainer.setPhone(phone == null || phone.isBlank() ? null : phone);
         return mapper.toDto(trainerRepository.save(trainer));
     }
@@ -71,7 +75,7 @@ public class TrainerService {
                 .orElse(false);
 
         if (!isTheTrainer && !isAssignedCustomer) {
-            throw new IllegalArgumentException("Access denied.");
+            throw new AccessDeniedException("You do not have permission to view this trainer.");
         }
 
         return mapper.toDto(trainer);
@@ -86,10 +90,16 @@ public class TrainerService {
         Trainer trainer = getTrainerByEmail(trainerEmail);
         Customer customer = customerService.getCustomerById(customerId);
 
-        if (customer.getTrainer() != null && customer.getTrainer().getId().equals(trainer.getId())) {
-            customer.setTrainer(null);
-            customerRepository.save(customer);
+        if (customer.getTrainer() == null || !customer.getTrainer().getId().equals(trainer.getId())) {
+            throw new IllegalArgumentException("Customer is not linked to this trainer.");
         }
+
+        trainingSessionRepository.deleteAll(
+                trainingSessionRepository.findAllByCustomer_IdAndTrainer_EmailAndStartDateAfter(
+                        customerId, trainerEmail, LocalDateTime.now())
+        );
+        customer.setTrainer(null);
+        customerRepository.save(customer);
     }
 
     public CustomerDto getCustomerById(String trainerEmail, Long id) {

@@ -26,7 +26,6 @@ public interface SessionExerciseRepository extends JpaRepository<SessionExercise
             @Param("trainingSessionId") Long trainingSessionId,
             @Param("trainingSessionTrainerId") Long trainingSessionTrainerId);
 
-
     List<SessionExercise> findSessionExerciseByTrainingSession_IdAndExercise_Id(Long trainingSessionId, Long exerciseId);
 
     Optional<SessionExercise> findByIdAndTrainingSession_Id(Long id, Long trainingSessionId);
