@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { toast } from '@/hooks/use-toast'
-import type { TrainingSessionDto, SessionExerciseDto, ExerciseDto, CreateSessionExercisesRequest } from '@/types'
+import type { TrainingSessionDto, SessionExerciseDto, ExerciseDto, CreateSessionExercisesRequest, UpdateSessionExerciseRequest } from '@/types'
 import { AxiosError } from 'axios'
 
 function formatDate(dt: string) {
@@ -70,6 +70,11 @@ export default function SessionDetailPage() {
   const [editOpen, setEditOpen] = useState(false)
   const [editForm, setEditForm] = useState({ startDate: '', duration: 0 })
   const [saving, setSaving] = useState(false)
+
+  // Edit exercise dialog
+  const [editExercise, setEditExercise] = useState<SessionExerciseDto | null>(null)
+  const [editExerciseForm, setEditExerciseForm] = useState<UpdateSessionExerciseRequest>({ reps: 0, series: 0, weight: 0 })
+  const [savingExercise, setSavingExercise] = useState(false)
 
   const fetchExercises = async () => {
     const { data } = await api.get<SessionExerciseDto[]>(`/sessions/${id}/exercises`)
@@ -187,6 +192,27 @@ export default function SessionDetailPage() {
     }
   }
 
+  const openEditExercise = (ex: SessionExerciseDto) => {
+    setEditExercise(ex)
+    setEditExerciseForm({ reps: ex.reps, series: ex.series, weight: ex.weight })
+  }
+
+  const handleEditExercise = async () => {
+    if (!editExercise) return
+    setSavingExercise(true)
+    try {
+      await api.put(`/sessions/${id}/exercises/${editExercise.id}`, editExerciseForm)
+      await fetchExercises()
+      setEditExercise(null)
+      toast({ title: 'Exercise updated', description: `${editExercise.exerciseName} has been updated.` })
+    } catch (err) {
+      const e = err as AxiosError<{ message: string }>
+      toast({ title: 'Error', description: e.response?.data?.message || 'Failed to update exercise', variant: 'destructive' })
+    } finally {
+      setSavingExercise(false)
+    }
+  }
+
   if (loading || !session) return <SessionSkeleton />
 
   const upcoming = isUpcoming(session.startDate)
@@ -291,6 +317,11 @@ export default function SessionDetailPage() {
                     <Button variant="ghost" size="sm" onClick={() => handleViewExercise(ex.exerciseId)}>
                       Details
                     </Button>
+                    {userType === 'TRAINER' && (
+                      <Button variant="ghost" size="sm" onClick={() => openEditExercise(ex)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    )}
                     {userType === 'TRAINER' && (
                       deleteConfirmId === ex.id ? (
                         <div className="flex items-center gap-1">
@@ -526,6 +557,54 @@ export default function SessionDetailPage() {
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
             <Button onClick={handleEditSession} disabled={saving}>
               {saving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Exercise Dialog */}
+      <Dialog open={!!editExercise} onOpenChange={(open) => !open && setEditExercise(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Exercise</DialogTitle>
+            <DialogDescription>Update sets, reps, and weight for {editExercise?.exerciseName}</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-3 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="editSeries">Sets</Label>
+              <Input
+                id="editSeries"
+                type="number"
+                min="1"
+                value={editExerciseForm.series}
+                onChange={(e) => setEditExerciseForm((p) => ({ ...p, series: Number(e.target.value) }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editReps">Reps</Label>
+              <Input
+                id="editReps"
+                type="number"
+                min="1"
+                value={editExerciseForm.reps}
+                onChange={(e) => setEditExerciseForm((p) => ({ ...p, reps: Number(e.target.value) }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="editWeight">Weight (kg)</Label>
+              <Input
+                id="editWeight"
+                type="number"
+                min="0"
+                value={editExerciseForm.weight}
+                onChange={(e) => setEditExerciseForm((p) => ({ ...p, weight: Number(e.target.value) }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditExercise(null)}>Cancel</Button>
+            <Button onClick={handleEditExercise} disabled={savingExercise}>
+              {savingExercise ? 'Saving...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>

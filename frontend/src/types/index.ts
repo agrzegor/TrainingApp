@@ -78,6 +78,12 @@ export interface CreateSessionExercisesRequest {
   weight: number
 }
 
+export interface UpdateSessionExerciseRequest {
+  reps?: number
+  series?: number
+  weight?: number
+}
+
 export interface ErrorResponse {
   status: number
   message: string
